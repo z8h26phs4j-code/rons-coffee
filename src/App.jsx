@@ -1,42 +1,46 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Coffee, Clock, MapPin, Wifi, Volume2, Users, Utensils, Car, Train, Star, Edit3, X, Check, ArrowLeft, Sparkles, AlertCircle, Footprints, Palette } from 'lucide-react';
+import { Coffee, Clock, MapPin, Wifi, Volume2, Users, Utensils, Car, Train, Star, Edit3, X, Check, ArrowLeft, Sparkles, AlertCircle, Footprints, Palette, Bike } from 'lucide-react';
 
-const STORAGE_KEY = 'rons-coffee-data-v4';
+const STORAGE_KEY = 'rons-coffee-data-v5';
 
+// walkMinutes: from 33 Shaler Lane
+// bikeMinutes: from 33 Shaler Lane
+// parkingRisk: "low" | "medium" | "high" | null
 const SEED_DATA = [
-  { id: 1,  name: "Revival Cambridge",              neighborhood: "Central Square",    favorite: false, season: "All Year",  hours: "08:00-15:00", openLate: false, noise: 3, food: 4, wifi: 4, seating: 4, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 25,   goodFor: "All",             stayLength: "Couple Hrs", scoreBump: 0,   notes: "Bright, airy space. Solid coffee and all-day food." },
-  { id: 2,  name: "Revival Watertown",              neighborhood: "Watertown",         favorite: false, season: "All Year",  hours: "08:00-15:00", openLate: false, noise: 3, food: 4, wifi: 4, seating: 5, parkingType: "Free Lot",   parkingCost: "Free",  transit: "",         walkMinutes: null, goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,   notes: "Spacious with great parking. Best Revival for long sessions." },
-  { id: 3,  name: "Revival Alewife",                neighborhood: "Alewife",           favorite: true,  season: "All Year",  hours: "08:00-15:00", openLate: false, noise: 3, food: 4, wifi: 4, seating: 5, parkingType: "Free Lot",   parkingCost: "Free",  transit: "Red Line", walkMinutes: null, goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,   notes: "Tons of seating, free parking, Red Line access. Opens at 8 daily." },
-  { id: 4,  name: "Jaho Central Square",            neighborhood: "Central Square",    favorite: true,  season: "Winter",    hours: "06:30-23:00", openLate: true,  noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 30,   goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 15,  notes: "Warm, cozy. Open until 11pm every day — best late-night option." },
-  { id: 5,  name: "Jaho Downtown Boston",           neighborhood: "Downtown Boston",   favorite: false, season: "",          hours: "07:00-18:00", openLate: false, noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, goodFor: "Casual",          stayLength: "Quick",      scoreBump: 0,   notes: "Specialty coffee downtown." },
-  { id: 6,  name: "Capital One Cafe",               neighborhood: "Downtown Boston",   favorite: false, season: "All Year",  hours: "07:00-19:00", openLate: false, noise: 3, food: 2, wifi: 5, seating: 4, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,   notes: "Free WiFi, tons of outlets. Light snacks only." },
-  { id: 7,  name: "Block Cafe",                     neighborhood: "Cambridge",         favorite: false, season: "",          hours: "07:00-16:00", openLate: false, noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 20,   goodFor: "Casual/Research", stayLength: "Couple Hrs", scoreBump: 0,   notes: "Neighborhood gem. Quiet atmosphere." },
-  { id: 8,  name: "Daily Provisions Cambridge",     neighborhood: "Cambridge",         favorite: false, season: "",          hours: "07:00-15:00", openLate: false, noise: 3, food: 5, wifi: 3, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 20,   goodFor: "Casual",          stayLength: "Quick",      scoreBump: 0,   notes: "Danny Meyer original Cambridge location. Incredible food." },
-  { id: 9,  name: "Broadsheet Coffee Roasters",     neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["08:00-16:00","07:30-16:00","07:30-16:00","07:30-16:00","07:30-16:00","07:30-16:00","08:00-16:00"], openLate: false, noise: 3, food: 3, wifi: 4, seating: 4, parkingType: "", parkingCost: "", transit: "Red Line", walkMinutes: 15, goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 0, notes: "Top-tier coffee near Harvard Yard. No laptops on weekends." },
-  { id: 10, name: "Tatte Harvard Square",           neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["07:30-19:00","07:00-20:30","07:00-20:30","07:00-20:30","07:00-20:30","07:00-20:30","07:00-20:30"], openLate: true,  noise: 3, food: 5, wifi: 4, seating: 4, parkingType: "", parkingCost: "", transit: "Red Line", walkMinutes: 15, goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0, notes: "Two floors, outlets upstairs. Open until 8:30pm weekdays, 7pm Sundays." },
-  { id: 11, name: "Tatte Kendall Square",           neighborhood: "Kendall Square",    favorite: false, season: "",          hours: ["08:00-19:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00"], openLate: false, noise: 3, food: 5, wifi: 4, seating: 5, parkingType: "Garage", parkingCost: "", transit: "Red Line", walkMinutes: null, goodFor: "All",            stayLength: "Camp Out",   scoreBump: 0, notes: "Spacious. Parking garage nearby. Full menu." },
-  { id: 12, name: "Tatte Cambridge Crossing",       neighborhood: "Cambridge Crossing", favorite: false, season: "",         hours: "07:00-18:00", openLate: false, noise: 3, food: 5, wifi: 4, seating: 4, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, goodFor: "All",             stayLength: "Couple Hrs", scoreBump: 0,   notes: "Newer, less crowded. Same great Tatte menu." },
-  { id: 13, name: "1369 Coffee (Central Sq)",       neighborhood: "Central Square",    favorite: false, season: "",          hours: ["08:00-16:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","08:00-16:00"], openLate: false, noise: 3, food: 3, wifi: 3, seating: 3, parkingType: "", parkingCost: "", transit: "Red Line", walkMinutes: 25, goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 0, notes: "Classic Cambridge coffeehouse. Award-winning. WiFi is paid by the hour." },
-  { id: 14, name: "1369 Coffee (Inman Sq)",         neighborhood: "Inman Square",      favorite: false, season: "",          hours: ["08:00-16:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","08:00-16:00"], openLate: false, noise: 3, food: 3, wifi: 3, seating: 3, parkingType: "", parkingCost: "", transit: "",         walkMinutes: 30, goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 0, notes: "Cozy community coffeehouse. Eclectic art. WiFi is paid by the hour." },
-  { id: 15, name: "Life Alive Kendall Square",      neighborhood: "Kendall Square",    favorite: false, season: "",          hours: "08:00-20:00", openLate: false, noise: 3, food: 5, wifi: 4, seating: 4, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,   notes: "Healthy food, relaxed vibe. Great for long sessions." },
-  { id: 16, name: "Flour Bakery Cambridge",         neighborhood: "Cambridge",         favorite: false, season: "",          hours: "07:00-18:00", openLate: false, noise: 3, food: 5, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 20,   goodFor: "Casual",          stayLength: "Quick",      scoreBump: 0,   notes: "Amazing pastries. More food spot than work cafe." },
-  { id: 17, name: "Call Me Honey",                  neighborhood: "East Cambridge",    favorite: false, season: "",          hours: ["08:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","08:00-14:00"], openLate: false, noise: 4, food: 3, wifi: 4, seating: 3, parkingType: "", parkingCost: "", transit: "",         walkMinutes: null, goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 0, notes: "Rebranded from Curio Coffee, opened Feb 2026. Same staff, same waffles." },
-  { id: 18, name: "Darwin's",                       neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["08:00-21:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-22:00","08:00-22:00"], openLate: true,  noise: 3, food: 5, wifi: 3, seating: 4, parkingType: "", parkingCost: "", transit: "",         walkMinutes: 7,   goodFor: "Casual",          stayLength: "Couple Hrs", scoreBump: 0, notes: "It's actually Luxor Cafe now — Egyptian-inspired, same address. But we still call it Darwin's. Great for a coffee chat — close by, good food, cozy. Wifi is weak so don't count on it. Open until 10pm Fri/Sat." },
-  { id: 19, name: "Intelligentsia Watertown",       neighborhood: "Watertown",         favorite: false, season: "",          hours: ["07:00-17:00","07:00-17:00","07:00-17:00","07:00-17:00","07:00-17:00","07:00-18:00","07:00-18:00"], openLate: false, noise: 3, food: 2, wifi: 4, seating: 4, parkingType: "Free Lot", parkingCost: "Free", transit: "", walkMinutes: null, goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: -8, notes: "Premier specialty coffee. Bright, airy. Outdoor seating. Fri-Sat open till 6." },
-  { id: 20, name: "Daily Provisions Harvard Sq",    neighborhood: "Harvard Square",    favorite: false, season: "All Year",  hours: "07:00-21:00", openLate: true,  noise: 3, food: 5, wifi: 3, seating: 3, parkingType: "Validated", parkingCost: "Validated", transit: "Red Line", walkMinutes: 15, goodFor: "All",            stayLength: "Couple Hrs", scoreBump: 0, notes: "Danny Meyer all-day spot. Exceptional crullers, breakfast sandwiches, roast chicken." },
-  { id: 21, name: "Flour Bakery Harvard Square",    neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["08:00-18:00","07:00-19:00","07:00-19:00","07:00-19:00","07:00-19:00","07:00-19:00","08:00-18:00"], openLate: false, noise: 3, food: 4, wifi: 3, seating: 3, parkingType: "", parkingCost: "", transit: "Red Line", walkMinutes: 12, goodFor: "Casual",          stayLength: "Quick",      scoreBump: -5, notes: "Joanne Chang's legendary bakery. Great in a pinch — close by, excellent food. More treat stop than work session." },
-  { id: 22, name: "Gutman Library",                 neighborhood: "Harvard Square",    favorite: false, season: "All Year",  hours: "09:00-17:00", openLate: false, noise: 5, food: 1, wifi: 5, seating: 5, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 10,   goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,   notes: "You're probably headed here anyway. Dead quiet, great wifi, infinite seating. No food — grab something on the way. Closes at 5pm." },
+  { id: 1,  name: "Revival Cambridge",              neighborhood: "Central Square",    favorite: false, season: "All Year",  hours: "08:00-15:00", openLate: false, noise: 3, food: 4, wifi: 4, seating: 4, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 30,  bikeMinutes: 13, parkingRisk: "medium", goodFor: "All",             stayLength: "Couple Hrs", scoreBump: 0,  notes: "Bright, airy space. Solid coffee and all-day food." },
+  { id: 2,  name: "Revival Watertown",              neighborhood: "Watertown",         favorite: false, season: "Summer",    hours: "08:00-15:00", openLate: false, noise: 2, food: 4, wifi: 4, seating: 5, parkingType: "Free Lot",   parkingCost: "Free",  transit: "",         walkMinutes: null, bikeMinutes: 18, parkingRisk: "low",    goodFor: "All",             stayLength: "Camp Out",   scoreBump: -12, notes: "Spacious and easy parking, but quiet and stagnant — no buzz, no foot traffic, no stories. Good fallback if everything else is full." },
+  { id: 3,  name: "Revival Alewife",                neighborhood: "Alewife",           favorite: true,  season: "All Year",  hours: "08:00-15:00", openLate: false, noise: 3, food: 4, wifi: 4, seating: 5, parkingType: "Free Lot",   parkingCost: "Free",  transit: "Red Line", walkMinutes: null, bikeMinutes: 22, parkingRisk: "low",    goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,  notes: "Tons of seating, free parking — never stressful. Red Line access. Consistent across seasons." },
+  { id: 4,  name: "Jaho Central Square",            neighborhood: "Central Square",    favorite: true,  season: "Winter",    hours: "06:30-23:00", openLate: true,  noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 30,  bikeMinutes: 13, parkingRisk: "high",   goodFor: "Research/Casual", stayLength: "Camp Out", scoreBump: 0,  notes: "Open until 11pm every night. Prime winter evening spot — Red Line is easiest, parking is a gamble." },
+  { id: 5,  name: "Jaho Downtown Boston",           neighborhood: "Downtown Boston",   favorite: false, season: "",          hours: "07:00-18:00", openLate: false, noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, bikeMinutes: 35, parkingRisk: "high",   goodFor: "Casual",          stayLength: "Quick",      scoreBump: 0,  notes: "Specialty coffee downtown. Best via Red Line." },
+  { id: 6,  name: "Capital One Cafe",               neighborhood: "Seaport",           favorite: false, season: "All Year",  hours: "07:00-19:00", openLate: false, noise: 3, food: 2, wifi: 5, seating: 4, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, bikeMinutes: 40, parkingRisk: "high",   goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,  notes: "Free WiFi, tons of outlets. Commit to the drive or T — this is a 3hr+ session spot. Great paired with ICA visit." },
+  { id: 7,  name: "Block Cafe",                     neighborhood: "Cambridge",         favorite: false, season: "",          hours: "07:00-16:00", openLate: false, noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 20,  bikeMinutes: 8,  parkingRisk: "low",    goodFor: "Casual/Research", stayLength: "Couple Hrs", scoreBump: 0,  notes: "Neighborhood gem. Quiet atmosphere." },
+  { id: 8,  name: "Daily Provisions Cambridge",     neighborhood: "Cambridge",         favorite: false, season: "",          hours: "07:00-15:00", openLate: false, noise: 3, food: 5, wifi: 3, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 20,  bikeMinutes: 8,  parkingRisk: "low",    goodFor: "Casual",          stayLength: "Quick",      scoreBump: 0,  notes: "Danny Meyer original Cambridge location. Incredible food." },
+  { id: 9,  name: "Broadsheet Coffee Roasters",     neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["08:00-16:00","07:30-16:00","07:30-16:00","07:30-16:00","07:30-16:00","07:30-16:00","08:00-16:00"], openLate: false, noise: 3, food: 3, wifi: 4, seating: 4, parkingType: "", parkingCost: "", transit: "Red Line", walkMinutes: 14, bikeMinutes: 6, parkingRisk: "medium", goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 0, notes: "Top-tier coffee near Harvard Yard. No laptops on weekends." },
+  { id: 10, name: "Tatte Harvard Square",           neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["07:30-19:00","07:00-20:30","07:00-20:30","07:00-20:30","07:00-20:30","07:00-20:30","07:00-20:30"], openLate: true,  noise: 3, food: 5, wifi: 4, seating: 4, parkingType: "", parkingCost: "", transit: "Red Line", walkMinutes: 14, bikeMinutes: 6, parkingRisk: "medium", goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0, notes: "Two floors, outlets upstairs. Open until 8:30pm weekdays, 7pm Sundays." },
+  { id: 11, name: "Tatte Kendall Square",           neighborhood: "Kendall Square",    favorite: false, season: "",          hours: ["08:00-19:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00"], openLate: false, noise: 3, food: 5, wifi: 4, seating: 5, parkingType: "Garage", parkingCost: "", transit: "Red Line", walkMinutes: null, bikeMinutes: 15, parkingRisk: "low", goodFor: "All",            stayLength: "Camp Out",   scoreBump: 0, notes: "Spacious. Guaranteed parking in garage next door. Full menu." },
+  { id: 12, name: "Tatte Cambridge Crossing",       neighborhood: "Cambridge Crossing", favorite: false, season: "",         hours: "07:00-18:00", openLate: false, noise: 3, food: 5, wifi: 4, seating: 4, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, bikeMinutes: 14, parkingRisk: "low",    goodFor: "All",             stayLength: "Couple Hrs", scoreBump: 0,  notes: "Newer, less crowded. Same great Tatte menu." },
+  { id: 13, name: "1369 Coffee (Central Sq)",       neighborhood: "Central Square",    favorite: false, season: "",          hours: ["08:00-16:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","08:00-16:00"], openLate: false, noise: 3, food: 3, wifi: 3, seating: 3, parkingType: "", parkingCost: "", transit: "Red Line", walkMinutes: 30, bikeMinutes: 13, parkingRisk: "medium", goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 0, notes: "Classic Cambridge coffeehouse. WiFi is paid by the hour." },
+  { id: 14, name: "1369 Coffee (Inman Sq)",         neighborhood: "Inman Square",      favorite: false, season: "",          hours: ["08:00-16:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","08:00-16:00"], openLate: false, noise: 3, food: 3, wifi: 3, seating: 3, parkingType: "", parkingCost: "", transit: "",         walkMinutes: 30, bikeMinutes: 12, parkingRisk: "low",    goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 0, notes: "Cozy community coffeehouse. Eclectic art. WiFi is paid by the hour." },
+  { id: 15, name: "Life Alive Kendall Square",      neighborhood: "Kendall Square",    favorite: false, season: "",          hours: "08:00-20:00", openLate: false, noise: 3, food: 5, wifi: 4, seating: 4, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, bikeMinutes: 15, parkingRisk: "medium", goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,  notes: "Healthy food, relaxed vibe. Great for long sessions." },
+  { id: 16, name: "Flour Bakery Cambridge",         neighborhood: "Cambridge",         favorite: false, season: "",          hours: "07:00-18:00", openLate: false, noise: 3, food: 5, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 20,  bikeMinutes: 8,  parkingRisk: "low",    goodFor: "Casual",          stayLength: "Quick",      scoreBump: 0,  notes: "Amazing pastries. More food stop than work cafe." },
+  { id: 17, name: "Call Me Honey",                  neighborhood: "East Cambridge",    favorite: false, season: "",          hours: ["08:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","08:00-14:00"], openLate: false, noise: 4, food: 3, wifi: 4, seating: 3, parkingType: "", parkingCost: "", transit: "",         walkMinutes: null, bikeMinutes: 12, parkingRisk: "low",    goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: 0, notes: "Rebranded from Curio Coffee, opened Feb 2026. Same staff, same waffles." },
+  { id: 18, name: "Darwin's",                       neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["08:00-21:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-22:00","08:00-22:00"], openLate: true,  noise: 3, food: 5, wifi: 3, seating: 4, parkingType: "", parkingCost: "", transit: "",         walkMinutes: 7,   bikeMinutes: 3,  parkingRisk: "medium", goodFor: "Casual",          stayLength: "Couple Hrs", scoreBump: 0, notes: "Actually Luxor Cafe now — Egyptian-inspired, same address. Great for a coffee chat — close, good food, cozy. WiFi is weak. Open until 10pm Fri/Sat." },
+  { id: 19, name: "Intelligentsia Watertown",       neighborhood: "Watertown",         favorite: false, season: "",          hours: ["07:00-17:00","07:00-17:00","07:00-17:00","07:00-17:00","07:00-17:00","07:00-18:00","07:00-18:00"], openLate: false, noise: 3, food: 2, wifi: 4, seating: 4, parkingType: "Free Lot", parkingCost: "Free", transit: "", walkMinutes: null, bikeMinutes: 18, parkingRisk: "low",   goodFor: "Research/Casual", stayLength: "Couple Hrs", scoreBump: -8, notes: "Premier specialty coffee. Bright, airy. Outdoor seating. Fri-Sat open till 6." },
+  { id: 20, name: "Daily Provisions Harvard Sq",    neighborhood: "Harvard Square",    favorite: false, season: "All Year",  hours: "07:00-21:00", openLate: true,  noise: 3, food: 5, wifi: 3, seating: 3, parkingType: "Validated", parkingCost: "Validated", transit: "Red Line", walkMinutes: 14, bikeMinutes: 6, parkingRisk: "low", goodFor: "All",            stayLength: "Couple Hrs", scoreBump: 0, notes: "Favorite vanilla latte. Danny Meyer all-day — crullers, sandwiches, roast chicken. Open until 9pm." },
+  { id: 21, name: "Flour Bakery Harvard Square",    neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["08:00-18:00","07:00-19:00","07:00-19:00","07:00-19:00","07:00-19:00","07:00-19:00","08:00-18:00"], openLate: false, noise: 3, food: 5, wifi: 3, seating: 3, parkingType: "", parkingCost: "", transit: "Red Line", walkMinutes: 14, bikeMinutes: 6, parkingRisk: "medium", goodFor: "Casual", stayLength: "Quick", scoreBump: 0, notes: "Joanne Chang's legendary bakery. Great food — he loves it. More treat stop than work session." },
+  { id: 22, name: "Gutman Library",                 neighborhood: "Harvard Square",    favorite: false, season: "All Year",  hours: "09:00-17:00", openLate: false, noise: 5, food: 1, wifi: 5, seating: 5, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 14,  bikeMinutes: 6,  parkingRisk: null,     goodFor: "All",             stayLength: "Camp Out",   scoreBump: 0,  notes: "You're probably headed here anyway. Dead quiet, great wifi, infinite seating. No food — grab something on the way. Closes at 5pm." },
+  { id: 23, name: "La Saison",                      neighborhood: "West Cambridge",    favorite: true,  season: "",          hours: ["07:00-16:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-15:00","07:00-16:00"], openLate: false, noise: 3, food: 5, wifi: 3, seating: 2, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 22,  bikeMinutes: 8,  parkingRisk: "low",    goodFor: "Casual",          stayLength: "Quick",      scoreBump: 0,  notes: "Favorite pastry + latte combo — pistachio croissant, rose latte. Iranian-French bakery, 407 Concord Ave. Limited seating but now has indoor. Best on Fri mornings for a leisurely sit." },
 ];
 
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 const MODES = [
-  { id: "Workshop Prep", label: "Prep / Grading", desc: "focused but low-key",          emoji: "💻" },
-  { id: "Research",      label: "Research",       desc: "reading, deep focus",           emoji: "📖" },
-  { id: "Art / Making",  label: "Art / Making",   desc: "collage, art, camp out",        emoji: "🎨" },
+  { id: "Workshop Prep", label: "Prep / Grading", desc: "focused but low-key",           emoji: "💻" },
+  { id: "Research",      label: "Research / Deep Work", desc: "reading, deep focus",       emoji: "📖" },
+  { id: "Art / Making",  label: "Art / Making",   desc: "collage, art, camp out",         emoji: "🎨" },
   { id: "Coffee Date",   label: "Coffee Chat",    desc: "meeting someone for work/school", emoji: "🤝" },
-  { id: "Casual",        label: "Casual",         desc: "hang out, light work",          emoji: "☕" },
-  { id: "Just Coffee",   label: "Just Coffee",    desc: "grab and go",                   emoji: "🚀" },
+  { id: "Casual",        label: "Casual",         desc: "hang out, light work",           emoji: "☕" },
+  { id: "Just Coffee",   label: "Just Coffee",    desc: "grab and go",                    emoji: "🚀" },
 ];
 
 const STAY_LENGTHS = [
@@ -48,37 +52,50 @@ const STAY_LENGTHS = [
 const C = {
   pink50:"#fbeaf0", pink100:"#f4c0d1", pink300:"#e07898", pink500:"#c24e6f", pink700:"#72243e",
   cream:"#fdf8f2", cream2:"#f5ede0",
-  terra50:"#faece7", terra300:"#e08060", terra500:"#c05030", terra700:"#71301a",
   warm100:"#f0e6d6", warm200:"#e0cbb0", warm500:"#8a6a50", warm700:"#4a3828",
   green50:"#eaf3de", green600:"#3b6d11",
   red50:"#fcebeb", red600:"#a32d2d",
   amber50:"#faeeda", amber600:"#854f0b",
+  blue50:"#e8f0fb", blue600:"#1a4f9c",
 };
 
 // Harvard Square shop IDs — walkable from home + Gutman
-const HARVARD_SQ_IDS = [9, 10, 18, 20, 21, 22];
+const HARVARD_SQ_IDS = [9, 10, 18, 20, 21, 22, 23];
+// Shops good for bad weather (enclosed, warm, worth a drive/T)
+const BAD_WEATHER_IDS = [4, 2, 3, 10, 11];
+// Shops that require driving commitment (downtown/far)
+const COMMITMENT_IDS = [6]; // Capital One Seaport — 3hr+ sessions only
 
 // Day/time helpers
 const getDow = () => new Date().getDay();
 const getHr  = () => new Date().getHours();
+const getMin = () => new Date().getMinutes();
 const isWeekday = () => getDow() >= 1 && getDow() <= 4;
 const isFriday  = () => getDow() === 5;
 const isWeekend = () => getDow() === 0 || getDow() === 6;
 const isMorning = () => getHr() < 12;
+const isEvening = () => getHr() >= 17;
+const isNight   = () => getHr() >= 19;
+const isLateStart = () => {
+  const hr = getHr(), mn = getMin();
+  if (isWeekend()) return hr > 9 || (hr === 9 && mn >= 30);
+  if (isFriday())  return hr > 9 || (hr === 9 && mn >= 0);
+  return hr > 8 || (hr === 8 && mn >= 30); // M-Th: late after 8:30am
+};
 
 // Hours helpers
 const timeToMin = t => { if (!t) return null; const [h,m]=t.split(":").map(Number); return h*60+m; };
 const getTodayH = shop => Array.isArray(shop.hours) ? shop.hours[getDow()]||null : shop.hours||null;
 const parseH = s => { if (!s) return {opens:null,closes:null}; const [a,b]=s.split("-"); return {opens:a,closes:b}; };
 const isOpen = shop => {
-  const n = getHr()*60+new Date().getMinutes();
+  const n = getHr()*60+getMin();
   const {opens,closes} = parseH(getTodayH(shop));
   const o=timeToMin(opens), c=timeToMin(closes);
   if (!o||!c) return null;
   return n>=o && n<c;
 };
 const minsLeft = shop => {
-  const n = getHr()*60+new Date().getMinutes();
+  const n = getHr()*60+getMin();
   const {closes} = parseH(getTodayH(shop));
   const c = timeToMin(closes);
   return c ? c-n : null;
@@ -95,34 +112,72 @@ const getSeason = () => { const m=new Date().getMonth(); if(m>=10||m<=2) return 
 const scoreShop = (shop, mode, stay) => {
   let s = 50;
   const tags = [];
+  const WORK_MODES = ["Research", "Workshop Prep", "Art / Making", "Coffee Date"];
+
+  // Hard exclusions — bury La Saison in work modes
+  if (shop.id === 23 && WORK_MODES.includes(mode)) s -= 200;
+
+  // Gutman: pull back for Research so it doesn't always win
+  if (shop.id === 22 && mode === "Research") s -= 15;
 
   if (shop.scoreBump) s += shop.scoreBump;
 
-  // Weekday morning: Harvard Sq dominates, far shops penalized
-  if (isWeekday() && isMorning()) {
-    if (HARVARD_SQ_IDS.includes(shop.id)) s += 18;
-    else if (shop.walkMinutes === null) s -= 20;
-    else if (shop.walkMinutes > 20) s -= 10;
-  }
-  // Friday morning: mild Harvard Sq preference
-  if (isFriday() && isMorning()) {
-    if (HARVARD_SQ_IDS.includes(shop.id)) s += 8;
-    else if (shop.walkMinutes === null) s -= 10;
-  }
-  // Weekends: no proximity bias
+  const cs = getSeason();
+  const hr = getHr();
+  const lateStart = isLateStart();
 
-  // Gutman: surface for focused work on weekdays
-  if (shop.id === 22) {
-    if (isWeekday() || isFriday()) {
-      s += 15;
-      if (isMorning()) s += 10;
-      if (mode === "Workshop Prep" || mode === "Research") s += 12;
+  // ── Late start: fewest decisions, closest + easiest ──
+  // Exempt Research and Workshop Prep — he'll go where the work takes him
+  if (lateStart && mode !== "Research" && mode !== "Workshop Prep") {
+    if (HARVARD_SQ_IDS.includes(shop.id)) s += 18;
+    else if (shop.walkMinutes === null) s -= 10;
+    if (shop.parkingRisk === "high") s -= 8;
+    if (shop.id === 22) s += 10;
+    if (shop.id === 18) s += 8;
+  }
+
+  // Commitment shops (Seaport etc) — only surface for Camp Out, bury for shorter stays
+  if (COMMITMENT_IDS.includes(shop.id)) {
+    if (stay === "Camp Out" || mode === "Workshop Prep") { s += 10; tags.push({t:"commit", label:"commit to the drive"}); }
+    else if (stay === "Couple Hrs") s -= 40;
+    else if (stay === "Quick") s -= 60;
+  }
+
+  // ── Weekday Mon-Thu proximity bias ──
+  if (isWeekday()) {
+    if (isMorning()) {
+      if (HARVARD_SQ_IDS.includes(shop.id)) s += 18;
+      else if (shop.walkMinutes === null) s -= 25;
+      else if (shop.walkMinutes > 20) s -= 15;
+    } else {
+      // Afternoon weekday — loosens up
+      if (HARVARD_SQ_IDS.includes(shop.id)) s += 8;
+      else if (shop.walkMinutes === null) s -= 8;
     }
   }
 
-  // Jaho: scales with time of day + season
+  // ── Friday: loosens as morning progresses ──
+  if (isFriday()) {
+    if (hr < 9) {
+      if (HARVARD_SQ_IDS.includes(shop.id)) s += 12;
+      else if (shop.walkMinutes === null) s -= 15;
+    } else if (hr < 11) {
+      if (HARVARD_SQ_IDS.includes(shop.id)) s += 6;
+      else if (shop.walkMinutes === null) s -= 5;
+    }
+    // 11am+ on Friday: fully open, no bias
+  }
+
+  // Flour Harvard Sq: surfaces just under Gutman for Coffee Chat — food makes it great for a meeting
+  if (shop.id === 21 && mode === "Coffee Date") s += 20;
+  if (shop.id === 22 && (isWeekday() || isFriday())) {
+    s += 15;
+    if (isMorning()) s += 10;
+    if (mode === "Workshop Prep" || mode === "Research") s += 12;
+  }
+
+  // ── Jaho: scales with time of day + season + transit ──
   if (shop.id === 4) {
-    const hr = getHr();
     let timeBoost = 0;
     if      (hr < 9)  timeBoost = -20;
     else if (hr < 11) timeBoost = -12;
@@ -132,42 +187,86 @@ const scoreShop = (shop, mode, stay) => {
     else if (hr < 19) timeBoost = 16;
     else              timeBoost = 22;
     s += timeBoost;
-    if (getSeason() === "Winter") s += 10;
+    if (cs === "Winter") { s += 12; if (isEvening()) s += 8; } // winter evening prime time
     if (mode === "Workshop Prep") s += 10;
+    if (cs === "Winter") tags.push({t:"season", label:"prime winter spot"});
   }
 
-  // Revival Watertown: boost Fri/Sat/Sun before 11am, penalize after
+  // ── La Saison: best on Fri/weekend mornings, surfaces for Just Coffee + Casual ──
+  if (shop.id === 23) {
+    if ((isFriday() || isWeekend()) && isMorning()) { s += 20; tags.push({t:"vibe", label:"friday morning treat ✦"}); }
+    else if (isWeekday() && isMorning()) s += 5; // still nearby, still good
+    if (mode === "Just Coffee" || mode === "Casual") s += 10;
+    if (mode === "Coffee Date") s -= 5; // limited seating, not ideal for chats
+  }
+
+  // ── Revival Watertown: Fri/Sat/Sun before 11am ──
   if (shop.id === 2) {
-    const isWkndOrFri = isWeekend() || isFriday();
-    if (isWkndOrFri && getHr() < 11) s += 20;
-    else if (isWkndOrFri && getHr() >= 11) s -= 15;
+    if ((isWeekend() || isFriday()) && hr < 11) { s += 20; tags.push({t:"morning", label:"great fri/wknd AM"}); }
+    else if ((isWeekend() || isFriday()) && hr >= 11) s -= 15;
   }
 
-  if (shop.favorite) { s += 25; tags.push({t:"fav", label:"★ favorite"}); }
+  // ── Revival Alewife: consistently good across seasons ──
+  if (shop.id === 3) {
+    if (isWeekend() || isFriday()) s += 8; // reliable weekend anchor
+  }
 
-  const cs = getSeason();
-  if (shop.season === "All Year") s += 5;
-  else if (cs && shop.season === cs) { s += 10; tags.push({t:"season", label:`great in ${cs.toLowerCase()}`}); }
+  // ── Summer: stay closer, enjoy the walk ──
+  if (cs === "Summer") {
+    if (shop.walkMinutes && shop.walkMinutes <= 15) s += 8;
+    if (shop.walkMinutes === null) s -= 5;
+  }
 
-  if (mode === "Coffee Date") {
-    const w = shop.walkMinutes;
-    if (w != null) {
-      if (w <= 15)      { s += 40; tags.push({t:"walk", label:`${w} min walk`}); }
-      else if (w <= 25) { s += 20; tags.push({t:"walk", label:`${w} min walk`}); }
-      else              { s += 8;  tags.push({t:"walk", label:`${w} min walk`}); }
-    } else { s -= 15; }
-    s += (shop.food-3)*4; s += (shop.seating-3)*3; s += (shop.noise-3)*2;
-    if (shop.openLate) { s += 6; tags.push({t:"late", label:"open late"}); }
-  } else if (mode === "Art / Making") {
+  // ── Winter: transit-friendly shops get boost ──
+  if (cs === "Winter") {
+    if (shop.transit === "Red Line") s += 8;
+    if (shop.walkMinutes === null && !shop.transit) s -= 8;
+    if (isEvening() && shop.openLate) { s += 10; tags.push({t:"late", label:"open late"}); }
+  }
+
+  // ── Just Coffee: always near Gutman, Daily Provisions first ──
+  if (mode === "Just Coffee") {
+    if (shop.id === 20) { s += 35; tags.push({t:"fav", label:"favorite vanilla latte ♥"}); }
+    else if (HARVARD_SQ_IDS.includes(shop.id)) s += 15;
+    else if (shop.walkMinutes === null) s -= 30;
+    else if (shop.walkMinutes > 20) s -= 20;
+  }
+
+  // ── Art/Making: moody + evening weighted ──
+  if (mode === "Art / Making") {
     s += (shop.seating-3)*6; s += (shop.noise-3)*4; s += (shop.wifi-3)*2;
     const moody = [4,14,17,18];
     if (moody.includes(shop.id)) { s += 18; tags.push({t:"vibe", label:"moody atmosphere"}); }
     if (shop.openLate) { s += 10; tags.push({t:"late", label:"open late"}); }
     if (shop.stayLength === "Camp Out") { s += 15; tags.push({t:"stay", label:"great for camping out"}); }
-    else if (shop.stayLength === "Couple Hrs") s += 5;
     s += (shop.food-3)*2;
-  } else {
-    if (mode && shop.goodFor) {
+    // Art is more afternoon/evening — penalize morning closers
+    if (isEvening() || isNight()) {
+      if (!shop.openLate) s -= 10;
+    }
+  }
+
+  // ── Coffee Chat: proximity + food + quiet ──
+  if (mode === "Coffee Date") {
+    const w = shop.walkMinutes;
+    if (w != null) {
+      if      (w <= 10) { s += 45; tags.push({t:"walk", label:`${w} min walk`}); }
+      else if (w <= 15) { s += 35; tags.push({t:"walk", label:`${w} min walk`}); }
+      else if (w <= 25) { s += 20; tags.push({t:"walk", label:`${w} min walk`}); }
+      else              { s += 8;  tags.push({t:"walk", label:`${w} min walk`}); }
+    } else { s -= 15; }
+    s += (shop.food-3)*4; s += (shop.seating-3)*3; s += (shop.noise-3)*2;
+    if (shop.openLate && isEvening()) { s += 6; tags.push({t:"late", label:"open late"}); }
+  }
+
+  // ── Research: morning or evening, avoid midday ──
+  if (mode === "Research") {
+    s += (shop.wifi-3)*4; s += (shop.seating-3)*4; s += (shop.noise-3)*3;
+    if (hr >= 10 && hr < 14) s -= 5; // midday is meetings, not research
+  }
+
+  // ── Standard mode scoring ──
+  if (mode !== "Just Coffee" && mode !== "Art / Making" && mode !== "Coffee Date" && mode !== "Research") {    if (mode && shop.goodFor) {
       const gf=shop.goodFor.toLowerCase(), ml=mode.toLowerCase();
       if (gf==="all") s += 10;
       else if (gf.includes(ml)||(ml==="just coffee"&&gf.includes("casual"))) { s += 20; tags.push({t:"mode", label:"built for this"}); }
@@ -178,33 +277,39 @@ const scoreShop = (shop, mode, stay) => {
       else if ((stay==="Couple Hrs"&&shop.stayLength==="Camp Out")||(stay==="Quick"&&shop.stayLength==="Couple Hrs")) s += 8;
       else s -= 5;
     }
-    if (mode==="Workshop Prep"||mode==="Research") { s+=(shop.wifi-3)*4; s+=(shop.seating-3)*4; s+=(shop.noise-3)*3; }
+    if (mode==="Workshop Prep") { s+=(shop.wifi-3)*4; s+=(shop.seating-3)*4; s+=(shop.noise-3)*3; }
     if (mode==="Casual") s += (shop.food-3)*3;
     if (stay==="Camp Out") { s+=(shop.seating-3)*5; s+=(shop.wifi-3)*3; }
     if (stay==="Quick") s += (shop.food-3)*2;
   }
 
+  // ── Closing soon penalty ──
   const ml = minsLeft(shop);
   const effStay = mode==="Art / Making" ? "Camp Out" : stay;
   if (ml != null) {
-    if (effStay==="Camp Out"&&ml<180)      { s -= 30; tags.push({t:"warn", label:`closes in ${ml}m`}); }
+    if (effStay==="Camp Out"&&ml<180)       { s -= 30; tags.push({t:"warn", label:`closes in ${ml}m`}); }
     else if (effStay==="Couple Hrs"&&ml<90) { s -= 20; tags.push({t:"warn", label:`closes in ${ml}m`}); }
     else if (ml<30)                         { s -= 15; tags.push({t:"warn", label:`closes in ${ml}m`}); }
   }
 
-  const nowM = getHr()*60+new Date().getMinutes();
-  if (nowM>=18*60&&shop.openLate&&mode!=="Coffee Date"&&mode!=="Art / Making") {
-    s += 8; tags.push({t:"late", label:"open late"});
-  }
+  // ── Favorite ──
+  if (shop.favorite && !(shop.id === 23 && WORK_MODES.includes(mode))) { s += 25; tags.push({t:"fav", label:"★ favorite"}); }
 
-  return {score:s, tags};
+  return {score: s, tags};
+
+  // Hard overrides — must come last
+  if (shop.id === 23 && WORK_MODES.includes(mode)) return {score: -999, tags: []};
+  if (shop.id === 22 && mode === "Research") s -= 15; // Gutman shouldn't always win Research
 };
 
 const tagStyle = t => {
-  if (t==="warn")   return {bg:C.red50,   color:C.red600,   border:`1px solid #f7c1c1`};
-  if (t==="fav")    return {bg:C.pink50,  color:C.pink700,  border:`1px solid ${C.pink100}`};
-  if (t==="walk")   return {bg:C.green50, color:C.green600, border:`1px solid #c0dd97`};
-  if (t==="late")   return {bg:C.amber50, color:C.amber600, border:`1px solid #fac775`};
+  if (t==="warn")    return {bg:C.red50,   color:C.red600,   border:`1px solid #f7c1c1`};
+  if (t==="fav")     return {bg:C.pink50,  color:C.pink700,  border:`1px solid ${C.pink100}`};
+  if (t==="walk")    return {bg:C.green50, color:C.green600, border:`1px solid #c0dd97`};
+  if (t==="late")    return {bg:C.amber50, color:C.amber600, border:`1px solid #fac775`};
+  if (t==="panic")   return {bg:"#fff0e0", color:"#7a3800",  border:`1px solid #f5c580`};
+  if (t==="commit")  return {bg:C.blue50,  color:C.blue600,  border:`1px solid #aec8f5`};
+  if (t==="morning") return {bg:C.pink50,  color:C.pink500,  border:`1px solid ${C.pink100}`};
   return {bg:C.cream2, color:C.warm500, border:`1px solid ${C.warm200}`};
 };
 
@@ -241,19 +346,23 @@ function ShopCard({shop, tags, rank, mode}) {
   const todayH = getTodayH(shop);
   const hasVar = Array.isArray(shop.hours);
 
+  const parkingBadge = shop.parkingRisk === "low" ? {label:"easy parking", bg:"#eaf3de", color:"#3b6d11"} :
+                       shop.parkingRisk === "high" ? {label:"parking gamble", bg:C.red50, color:C.red600} : null;
+
   return (
-    <div style={{background:"white",borderRadius:18,border:`1.5px solid ${rank===1?C.pink300:C.warm100}`,overflow:"hidden",transition:"box-shadow .15s",position:"relative",fontFamily:"inherit"}}>
+    <div style={{background:"white",borderRadius:18,border:`1.5px solid ${rank===1?C.pink300:C.warm100}`,overflow:"hidden",position:"relative",fontFamily:"inherit"}}>
       {rank===1&&<div style={{position:"absolute",top:0,right:0,background:C.pink500,color:"white",fontSize:10,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",padding:"4px 14px",borderBottomLeftRadius:12}}>top pick ✦</div>}
       <div style={{padding:"18px 20px 16px"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:8}}>
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
-              <span style={{fontFamily:"Georgia,serif",fontSize:20,fontWeight:600,color:C.warm700,letterSpacing:"-0.3px"}}>{shop.name}</span>
+              <span style={{fontFamily:"Georgia,serif",fontSize:20,fontWeight:600,color:C.warm700}}>{shop.name}</span>
               {shop.favorite&&<span style={{color:C.pink500,fontSize:14}}>♥</span>}
             </div>
             <div style={{display:"flex",alignItems:"center",gap:10,marginTop:3,flexWrap:"wrap"}}>
               <span style={{fontSize:12,color:C.warm500,display:"flex",alignItems:"center",gap:3}}><MapPin size={11}/>{shop.neighborhood}</span>
-              {mode==="Coffee Date"&&shop.walkMinutes&&<span style={{fontSize:11,color:C.green600,fontWeight:600,display:"flex",alignItems:"center",gap:3}}><Footprints size={11}/>{shop.walkMinutes} min walk</span>}
+              {shop.walkMinutes&&<span style={{fontSize:11,color:C.warm500,display:"flex",alignItems:"center",gap:3}}><Footprints size={11}/>{shop.walkMinutes}m walk</span>}
+              {shop.bikeMinutes&&<span style={{fontSize:11,color:C.blue600,display:"flex",alignItems:"center",gap:3,fontWeight:500}}><Bike size={11}/>{shop.bikeMinutes}m bike 🚲</span>}
             </div>
           </div>
           <div style={{textAlign:"right",flexShrink:0}}>
@@ -271,8 +380,9 @@ function ShopCard({shop, tags, rank, mode}) {
 
         {exp&&<div style={{background:C.cream,borderRadius:10,padding:"10px 12px",marginBottom:12,border:`1px solid ${C.warm100}`}}><HoursGrid hours={shop.hours}/></div>}
 
-        {tags&&tags.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:10}}>
-          {tags.map((tag,i)=>{const ts=tagStyle(tag.t);return <span key={i} style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",padding:"3px 9px",borderRadius:20,...ts}}>{tag.label}</span>;})}
+        {tags&&tags.filter(t=>t.t!=="panic").length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:10}}>
+          {tags.filter(t=>t.t!=="panic").map((tag,i)=>{const ts=tagStyle(tag.t);return <span key={i} style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",padding:"3px 9px",borderRadius:20,...ts}}>{tag.label}</span>;})}
+          {parkingBadge&&<span style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",padding:"3px 9px",borderRadius:20,background:parkingBadge.bg,color:parkingBadge.color,border:`1px solid ${parkingBadge.bg}`}}>{parkingBadge.label}</span>}
         </div>}
 
         {shop.notes&&<p style={{fontSize:13,color:C.warm500,fontFamily:"Georgia,serif",fontStyle:"italic",borderLeft:`3px solid ${C.pink100}`,paddingLeft:10,margin:"0 0 12px",lineHeight:1.6}}>"{shop.notes}"</p>}
@@ -368,10 +478,19 @@ function EditModal({shop,onSave,onClose}) {
           </div>
         ))}
         <div><label style={fieldLabel}>walk from home (min)</label><input type="number" placeholder="blank = not walkable" value={d.walkMinutes||""} onChange={e=>up("walkMinutes",e.target.value?Number(e.target.value):null)} style={inp2}/></div>
+        <div><label style={fieldLabel}>bike from home (min)</label><input type="number" placeholder="blank = unknown" value={d.bikeMinutes||""} onChange={e=>up("bikeMinutes",e.target.value?Number(e.target.value):null)} style={inp2}/></div>
+        <div>
+          <label style={fieldLabel}>parking stress</label>
+          <div style={{display:"flex",gap:6}}>
+            {[["low","😌 easy"],["medium","😐 maybe"],["high","😬 gamble"]].map(([val,lbl])=>(
+              <button key={val} onClick={()=>up("parkingRisk",val)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`2px solid ${d.parkingRisk===val?C.pink500:C.warm200}`,background:d.parkingRisk===val?C.pink50:"white",color:d.parkingRisk===val?C.pink700:C.warm500,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{lbl}</button>
+            ))}
+          </div>
+        </div>
         <div><label style={fieldLabel}>good for</label><select value={d.goodFor||""} onChange={e=>up("goodFor",e.target.value)} style={sel}><option value="All">All</option><option value="Research/Casual">Research / Casual</option><option value="Casual">Casual</option><option value="Workshop Prep">Workshop Prep</option></select></div>
         <div><label style={fieldLabel}>stay length</label><select value={d.stayLength||""} onChange={e=>up("stayLength",e.target.value)} style={sel}><option value="Quick">Quick</option><option value="Couple Hrs">Couple Hrs</option><option value="Camp Out">Camp Out</option></select></div>
         <div><label style={fieldLabel}>best season</label><select value={d.season||""} onChange={e=>up("season",e.target.value)} style={sel}><option value="All Year">All Year</option><option value="Winter">Winter</option><option value="Summer">Summer</option><option value="">Unknown</option></select></div>
-        <div><label style={fieldLabel}>parking</label><select value={d.parkingType||""} onChange={e=>up("parkingType",e.target.value)} style={sel}><option value="">Unknown</option><option value="Free Lot">Free Lot</option><option value="Street Meter">Street Meter</option><option value="Garage">Garage</option><option value="Validated">Validated</option><option value="None">None</option></select></div>
+        <div><label style={fieldLabel}>parking type</label><select value={d.parkingType||""} onChange={e=>up("parkingType",e.target.value)} style={sel}><option value="">Unknown</option><option value="Free Lot">Free Lot</option><option value="Street Meter">Street Meter</option><option value="Garage">Garage</option><option value="Validated">Validated</option><option value="None">None</option></select></div>
         <div><label style={fieldLabel}>transit</label><select value={d.transit||""} onChange={e=>up("transit",e.target.value)} style={sel}><option value="">Unknown</option><option value="Red Line">Red Line</option><option value="Bus">Bus</option><option value="Both">Both</option><option value="Walk from Home">Walk from Home</option></select></div>
         <div><label style={fieldLabel}>notes</label><textarea value={d.notes||""} onChange={e=>up("notes",e.target.value)} rows={3} style={{...inp2,resize:"none"}}/></div>
       </div>
@@ -385,14 +504,13 @@ function EditModal({shop,onSave,onClose}) {
 
 function ManageView({shops,onSave,onBack}) {
   const [editing,setEditing] = useState(null);
-  const incomplete = s => !s.parkingType||!s.transit;
   return <div style={{minHeight:"100vh",background:C.cream,fontFamily:"inherit"}}>
     <div style={{background:"white",borderBottom:`1px solid ${C.warm100}`,position:"sticky",top:0,zIndex:10}}>
       <div style={{maxWidth:640,margin:"0 auto",padding:"14px 20px",display:"flex",alignItems:"center",gap:12}}>
         <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",color:C.warm500,padding:4}}><ArrowLeft size={20}/></button>
         <div>
           <div style={{fontFamily:"Georgia,serif",fontSize:18,fontWeight:600,color:C.warm700}}>manage shops</div>
-          <div style={{fontSize:12,color:C.warm500}}>{shops.filter(incomplete).length} with missing info</div>
+          <div style={{fontSize:12,color:C.warm500}}>{shops.length} spots total</div>
         </div>
       </div>
     </div>
@@ -402,12 +520,11 @@ function ManageView({shops,onSave,onBack}) {
           <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
             <span style={{fontWeight:600,color:C.warm700,fontSize:14}}>{shop.name}</span>
             {shop.favorite&&<span style={{color:C.pink500,fontSize:12}}>♥</span>}
-            {Array.isArray(shop.hours)&&<span style={{fontSize:10,background:C.pink50,color:C.pink700,border:`1px solid ${C.pink100}`,borderRadius:20,padding:"2px 7px",fontWeight:600}}>per-day hrs</span>}
-            {shop.walkMinutes&&<span style={{fontSize:10,background:C.green50,color:C.green600,border:"1px solid #c0dd97",borderRadius:20,padding:"2px 7px",fontWeight:600}}>{shop.walkMinutes}m walk</span>}
+            {Array.isArray(shop.hours)&&<span style={{fontSize:10,background:C.pink50,color:C.pink700,border:`1px solid ${C.pink100}`,borderRadius:20,padding:"2px 7px",fontWeight:600}}>per-day</span>}
+            {shop.bikeMinutes&&<span style={{fontSize:10,background:C.blue50,color:C.blue600,border:`1px solid #aec8f5`,borderRadius:20,padding:"2px 7px",fontWeight:600}}>{shop.bikeMinutes}m 🚲</span>}
           </div>
           <div style={{fontSize:12,color:C.warm500,marginTop:2}}>{shop.neighborhood} · today: {fmtH(getTodayH(shop))}</div>
         </div>
-        {incomplete(shop)&&<div style={{display:"flex",alignItems:"center",gap:4,color:C.amber600,flexShrink:0}}><AlertCircle size={13}/><span style={{fontSize:10,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>incomplete</span></div>}
         <Edit3 size={15} color={C.warm500} style={{flexShrink:0}}/>
       </button>)}
     </div>
@@ -424,9 +541,7 @@ export default function RonsCoffee() {
   const [now,setNow] = useState(new Date());
 
   useEffect(()=>{
-    (async()=>{
-      try { const r=await window.storage.get(STORAGE_KEY); if(r?.value){const p=JSON.parse(r.value);if(Array.isArray(p)&&p.length>0)setShops(p);} } catch{}
-    })();
+    (async()=>{ try { const r=await window.storage.get(STORAGE_KEY); if(r?.value){const p=JSON.parse(r.value);if(Array.isArray(p)&&p.length>0)setShops(p);} } catch{} })();
   },[]);
 
   useEffect(()=>{ const t=setInterval(()=>setNow(new Date()),60000); return()=>clearInterval(t); },[]);
@@ -437,8 +552,9 @@ export default function RonsCoffee() {
     try { await window.storage.set(STORAGE_KEY,JSON.stringify(n)); } catch(e){ console.error(e); }
   };
 
-  const needsStay = mode && mode!=="Coffee Date" && mode!=="Art / Making";
+  const needsStay = mode && mode!=="Coffee Date" && mode!=="Art / Making" && mode!=="Just Coffee";
   const complete = mode && (!needsStay||stay);
+  const lateStart = isLateStart();
 
   const ranked = useMemo(()=>
     shops
@@ -477,6 +593,9 @@ export default function RonsCoffee() {
             <Edit3 size={14}/> manage
           </button>
         </div>
+
+
+
         <div style={{fontFamily:"Fraunces,Georgia,serif",fontSize:36,fontWeight:300,color:C.warm700,letterSpacing:"-0.5px",lineHeight:1.15}}>
           {greeting}<br/><span style={{color:C.pink500,fontWeight:500}}>Ron.</span>
         </div>
@@ -484,6 +603,7 @@ export default function RonsCoffee() {
           {!mode&&"what are you going for today?"}
           {mode==="Coffee Date"&&"closest walkable spots first ↓"}
           {mode==="Art / Making"&&"moody, spacious, open late ↓"}
+          {mode==="Just Coffee"&&"vanilla latte o'clock ↓"}
           {mode&&needsStay&&!stay&&"how long are you staying?"}
           {mode&&needsStay&&stay&&`✦ picks for ${mode.toLowerCase()} · ${stay.toLowerCase()}`}
         </div>
@@ -509,7 +629,7 @@ export default function RonsCoffee() {
 
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
         <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:"0.15em",color:C.pink500,fontWeight:700}}>
-          {mode==="Coffee Date"?"closest first":mode==="Art / Making"?"best for making":complete?"recommendations":mode?"best matches":"right now"}
+          {mode==="Coffee Date"?"closest first":mode==="Art / Making"?"best for making":mode==="Just Coffee"?"nearest + best":complete?"recommendations":mode?"best matches":"right now"}
         </div>
         <label style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:C.warm500,cursor:"pointer"}}>
           <input type="checkbox" checked={showClosed} onChange={e=>setShowClosed(e.target.checked)} style={{accentColor:C.pink500,width:13,height:13}}/>
@@ -518,7 +638,7 @@ export default function RonsCoffee() {
       </div>
 
       <div style={{display:"flex",flexDirection:"column",gap:12}}>
-        {ranked.slice(0,complete||mode==="Coffee Date"||mode==="Art / Making"?6:8).map((item,i)=>(
+        {ranked.map((item,i)=>(
           <ShopCard key={item.shop.id} shop={item.shop} tags={item.tags} rank={i+1} mode={mode}/>
         ))}
         {ranked.length===0&&<div style={{textAlign:"center",padding:"48px 0",color:C.warm500}}>
