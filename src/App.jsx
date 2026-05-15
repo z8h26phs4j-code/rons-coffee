@@ -7,7 +7,7 @@ const SEED_DATA = [
   { id: 1,  name: "Revival Cambridge",              neighborhood: "Central Square",    favorite: false, season: "All Year",  hours: "08:00-15:00", openLate: false, noise: 3, food: 4, wifi: 4, seating: 4, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 25,   goodFor: "All",            stayLength: "Couple Hrs", notes: "Bright, airy space. Solid coffee and all-day food." },
   { id: 2,  name: "Revival Watertown",              neighborhood: "Watertown",         favorite: false, season: "All Year",  hours: "08:00-15:00", openLate: false, noise: 3, food: 4, wifi: 4, seating: 5, parkingType: "Free Lot",   parkingCost: "Free",  transit: "",         walkMinutes: null, goodFor: "All",            stayLength: "Camp Out",   notes: "Spacious with great parking. Best Revival for long sessions." },
   { id: 3,  name: "Revival Alewife",                neighborhood: "Alewife",           favorite: true,  season: "All Year",  hours: "08:00-15:00", openLate: false, noise: 3, food: 4, wifi: 4, seating: 5, parkingType: "Free Lot",   parkingCost: "Free",  transit: "Red Line", walkMinutes: null, goodFor: "All",            stayLength: "Camp Out",   notes: "Tons of seating, free parking, Red Line access. Opens at 8 daily." },
-  { id: 4,  name: "Jaho Central Square",            neighborhood: "Central Square",    favorite: true,  season: "Winter",    hours: "06:30-23:00", openLate: true,  noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 25,   goodFor: "Research/Casual", stayLength: "Couple Hrs", notes: "Warm, cozy. Open until 11pm every day — best late-night option." },
+  { id: 4,  name: "Jaho Central Square",            neighborhood: "Central Square",    favorite: true,  season: "Winter",    hours: "06:30-23:00", openLate: true,  noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 25,   goodFor: "Research/Casual", stayLength: "Couple Hrs", notes: "Warm, cozy. Open until 11pm every day — best late-night option.", scoreBump: 15 },
   { id: 5,  name: "Jaho Downtown Boston",           neighborhood: "Downtown Boston",   favorite: false, season: "",          hours: "07:00-18:00", openLate: false, noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, goodFor: "Casual",         stayLength: "Quick",      notes: "Specialty coffee downtown." },
   { id: 6,  name: "Capital One Cafe",               neighborhood: "Downtown Boston",   favorite: false, season: "All Year",  hours: "07:00-19:00", openLate: false, noise: 3, food: 2, wifi: 5, seating: 4, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, goodFor: "All",            stayLength: "Camp Out",   notes: "Free WiFi, tons of outlets. Light snacks only." },
   { id: 7,  name: "Block Cafe",                     neighborhood: "Cambridge",         favorite: false, season: "",          hours: "07:00-16:00", openLate: false, noise: 3, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 20,   goodFor: "Casual/Research", stayLength: "Couple Hrs", notes: "Neighborhood gem. Quiet atmosphere." },
@@ -22,8 +22,9 @@ const SEED_DATA = [
   { id: 16, name: "Flour Bakery Cambridge",         neighborhood: "Cambridge",         favorite: false, season: "",          hours: "07:00-18:00", openLate: false, noise: 3, food: 5, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 20,   goodFor: "Casual",         stayLength: "Quick",      notes: "Amazing pastries. More food spot than work cafe." },
   { id: 17, name: "Call Me Honey",                  neighborhood: "East Cambridge",    favorite: false, season: "",          hours: ["08:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","07:00-14:00","08:00-14:00"], openLate: false, noise: 4, food: 3, wifi: 4, seating: 3, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: null, goodFor: "Research/Casual", stayLength: "Couple Hrs", notes: "Rebranded from Curio Coffee, opened Feb 2026. Same staff, same waffles." },
   { id: 18, name: "Darwin's",                       neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["08:00-21:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-20:00","07:00-22:00","08:00-22:00"], openLate: true, noise: 3, food: 5, wifi: 3, seating: 4, parkingType: "",          parkingCost: "",      transit: "",         walkMinutes: 15,   goodFor: "Casual",         stayLength: "Couple Hrs", notes: "It's actually Luxor Cafe now — Egyptian-inspired, same address. But we still call it Darwin's. Open until 10pm Fri/Sat." },
-  { id: 19, name: "Intelligentsia Watertown",       neighborhood: "Watertown",         favorite: false, season: "",          hours: ["07:00-17:00","07:00-17:00","07:00-17:00","07:00-17:00","07:00-17:00","07:00-18:00","07:00-18:00"], openLate: false, noise: 3, food: 2, wifi: 4, seating: 4, parkingType: "Free Lot", parkingCost: "Free",  transit: "",         walkMinutes: null, goodFor: "Research/Casual", stayLength: "Couple Hrs", notes: "Premier specialty coffee. Bright, airy. Outdoor seating. Fri–Sat open till 6." },
+  { id: 19, name: "Intelligentsia Watertown",       neighborhood: "Watertown",         favorite: false, season: "",          hours: ["07:00-17:00","07:00-17:00","07:00-17:00","07:00-17:00","07:00-17:00","07:00-18:00","07:00-18:00"], openLate: false, noise: 3, food: 2, wifi: 4, seating: 4, parkingType: "Free Lot", parkingCost: "Free",  transit: "",         walkMinutes: null, goodFor: "Research/Casual", stayLength: "Couple Hrs", notes: "Premier specialty coffee. Bright, airy. Outdoor seating. Fri–Sat open till 6.", scoreBump: -8 },
   { id: 20, name: "Daily Provisions Harvard Sq",   neighborhood: "Harvard Square",    favorite: false, season: "All Year",  hours: "07:00-21:00", openLate: true,  noise: 3, food: 5, wifi: 3, seating: 3, parkingType: "Validated", parkingCost: "Validated", transit: "Red Line", walkMinutes: 15, goodFor: "All",            stayLength: "Couple Hrs", notes: "Danny Meyer's all-day spot. Exceptional crullers, breakfast sandwiches, roast chicken." },
+  { id: 21, name: "Flour Bakery Harvard Square",   neighborhood: "Harvard Square",    favorite: false, season: "",          hours: ["08:00-18:00","07:00-19:00","07:00-19:00","07:00-19:00","07:00-19:00","07:00-19:00","08:00-18:00"], openLate: false, noise: 3, food: 5, wifi: 3, seating: 3, parkingType: "",          parkingCost: "",      transit: "Red Line", walkMinutes: 12,   goodFor: "Casual",         stayLength: "Quick",      notes: "Joanne Chang's legendary bakery. Sticky buns, sandwiches, tarts. More food destination than work cafe." },
 ];
 
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -80,6 +81,25 @@ const getSeason = () => { const m=new Date().getMonth(); if(m>=10||m<=2) return 
 // ── scoring ──
 const scoreShop = (shop, mode, stay) => {
   let s = 50; const tags = [];
+  if (shop.scoreBump) s += shop.scoreBump;
+
+  // Revival Watertown: boost Fri/Sat/Sun mornings before 11am, penalize after
+  if (shop.id === 2) {
+    const dow = new Date().getDay(); // 0=Sun, 5=Fri, 6=Sat
+    const hr = new Date().getHours();
+    const isWeekendOrFri = dow === 0 || dow === 5 || dow === 6;
+    if (isWeekendOrFri && hr < 11) s += 20;
+    else if (isWeekendOrFri && hr >= 11) s -= 15;
+  }
+
+  // Jaho-specific tuning: strong for Prep/Grading, with seasonal + evening boosts
+  if (shop.id === 4 && mode === "Workshop Prep") {
+    s += 18; // strong baseline for Prep/Grading
+    const cs = getSeason();
+    if (cs === "Winter") s += 10; // extra winter boost
+    const hr = new Date().getHours();
+    if (hr >= 17) s += 8; // evening boost
+  }
   if (shop.favorite) { s+=25; tags.push({t:"fav",label:"★ favorite"}); }
   const cs = getSeason();
   if (shop.season==="All Year") s+=5;
